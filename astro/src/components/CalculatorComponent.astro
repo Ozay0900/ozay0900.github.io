@@ -28,7 +28,7 @@ const karatPrices = {
 ---
 
 <div id="container">
-    <img id="background" src={background.src} alt="" fetchpriority="high" />
+    <img id="background" src={background.src} alt="" fetchpriority="high"/>
     <main>
         <section id="hero">
             <h1>Hayrunnisa's Gold Rechner</h1>
@@ -37,12 +37,12 @@ const karatPrices = {
                 <div class="calculator">
                     <div class="input-group">
                         <label for="vendor-price">Händler Verkaufspreis</label>
-                        <input type="number" id="vendor-price" placeholder="e.g., 60" step="0.01" />
+                        <input type="number" id="vendor-price" placeholder="e.g., 60" step="0.01"/>
                     </div>
 
                     <div class="input-group">
                         <label for="weight">Gewicht in Gramm (Rohgewicht)</label>
-                        <input type="number" id="weight" placeholder="e.g., 10" step="0.01" />
+                        <input type="number" id="weight" placeholder="e.g., 10" step="0.01"/>
                     </div>
 
                     <div class="input-group">
@@ -61,32 +61,30 @@ const karatPrices = {
                 </div>
 
                 <div class="price-table">
-                    <h2>💰 Aktuelle Goldpreis Kurse</h2>
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                            <tr>
-                                <th>Karat</th>
-                                <th>Preis/Gramm</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {Object.entries(karatPrices).map(([karat, price]) => (
-                                    <tr>
-                                        <td class="karat-cell">{karat}</td>
-                                        <td class="price-cell">€{price.toFixed(2).replace('.', ',')}</td>
-                                    </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <h2>Aktueller Goldkurs</h2>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Karat</th>
+                            <th>Preis/Gramm</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {Object.entries(karatPrices).map(([karat, price]) => (
+                                <tr>
+                                    <td>{karat}</td>
+                                    <td>€{price.toFixed(2).replace('.', ',')}</td>
+                                </tr>
+                        ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
     </main>
 </div>
 
-<script define:vars={{ goldPricePerGram }}>
+<script define:vars={{goldPricePerGram}}>
     function formatEuro(amount) {
         return amount.toFixed(2).replace('.', ',');
     }
@@ -180,18 +178,18 @@ const karatPrices = {
     }
 
     h1 {
-        font-size: 22px;
+        font-size: 40px;
         margin-top: 0;
-        margin-bottom: 1.5rem;
+        margin-bottom: 5rem;
         text-align: center;
     }
 
     .content-wrapper {
         display: flex;
-        gap: 2rem;
+        gap: 5rem;
         align-items: flex-start;
         width: 100%;
-        max-width: 900px;
+        max-width: 600px;
     }
 
     .calculator {
@@ -200,8 +198,9 @@ const karatPrices = {
     }
 
     .price-table {
-        flex: 1;
-        min-width: 300px;
+        flex: 0 1 auto;
+        min-width: 250px;
+        max-width: 350px;
     }
 
     .price-table h2 {
@@ -209,65 +208,50 @@ const karatPrices = {
         margin-top: 0;
         margin-bottom: 1rem;
         color: #111827;
+        font-weight: 500;
         text-align: center;
-        font-weight: 600;
-    }
-
-    .table-wrapper {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
     }
 
     table {
         width: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 4px;
         border-collapse: collapse;
-    }
-
-    thead {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        overflow: hidden;
     }
 
     th {
-        padding: 1rem;
+        padding: 0.75rem;
         text-align: left;
         font-weight: 600;
-        font-size: 0.95rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        background: #f3f4f6;
+        color: #111827;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th:last-child {
+        text-align: right;
     }
 
     td {
-        padding: 0.9rem 1rem;
+        padding: 0.75rem;
+        border-bottom: 1px solid #f3f4f6;
     }
 
-    .karat-cell {
-        font-weight: 600;
-        color: #374151;
-        font-size: 1rem;
-    }
-
-    .price-cell {
-        color: #059669;
-        font-weight: 700;
-        font-size: 1.05rem;
+    td:last-child {
         text-align: right;
     }
 
     tbody tr {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        transition: all 0.2s ease;
-    }
-
-    tbody tr:last-child {
-        border-bottom: none;
+        transition: background-color 0.2s ease;
     }
 
     tbody tr:hover {
-        background: linear-gradient(90deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
-        transform: translateX(2px);
+        background-color: rgba(37, 99, 235, 0.1);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
     }
 
     .input-group {
