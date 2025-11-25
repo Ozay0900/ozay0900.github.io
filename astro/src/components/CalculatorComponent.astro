@@ -31,7 +31,17 @@ const karatPrices = {
     <img id="background" src={background.src} alt="" fetchpriority="high"/>
     <main>
         <section id="hero">
-            <h1>Hayrunnisa's Gold Rechner</h1>
+            <h1>
+                <div class="heart">
+                    ♡
+                </div>
+                <div>
+                    𝑯𝑨𝒀𝑹𝑼𝑵𝑵𝑰𝑺𝑨'𝑺
+                </div>
+                <div>
+                    𝑮𝑶𝑳𝑫 𝑹𝑬𝑪𝑯𝑵𝑬𝑹
+                </div>
+            </h1>
 
             <div class="content-wrapper">
                 <div class="calculator">
@@ -178,10 +188,31 @@ const karatPrices = {
     }
 
     h1 {
-        font-size: 40px;
+        font-size: 35px;
         margin-top: 0;
-        margin-bottom: 5rem;
+        margin-bottom: 6rem;
         text-align: center;
+        line-height: 1.2;
+        letter-spacing: 2px;
+        font-weight: 700;
+        color: #111827;  /* Keep original color */
+    }
+
+    .heart {
+        display: inline-block;
+        transition: transform 0.1s ease;
+    }
+
+    @keyframes jump {
+        0%, 100% { transform: translateY(0); }
+        12.5% { transform: translateY(-10px); }
+        25% { transform: translateY(0); }
+        37.5% { transform: translateY(-10px); }
+        50%, 100% { transform: translateY(0); }
+    }
+
+    .heart:hover {
+        animation: jump 1.2s ease-in-out;
     }
 
     .content-wrapper {
