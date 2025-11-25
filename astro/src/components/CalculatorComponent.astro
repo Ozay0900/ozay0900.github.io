@@ -1,3 +1,368 @@
 ---
-
+import background from "../assets/background.svg";
 ---
+
+<div id="container">
+    <img id="background" src={background.src} alt="" fetchpriority="high" />
+    <main>
+        <section id="hero">
+            <h1>Hayrunnisas gold rechner</h1>
+
+            <div class="calculator">
+                <div class="input-group">
+                    <label for="vendor-price">Händler verkaufspreis</label>
+                    <input type="number" id="vendor-price" placeholder="e.g., 60" step="0.01" />
+                </div>
+
+                <div class="input-group">
+                    <label for="weight">Gewicht in gramm (Rohgewicht)</label>
+                    <input type="number" id="weight" placeholder="e.g., 10" step="0.01" />
+                </div>
+
+                <div class="input-group">
+                    <label for="karat">Karat</label>
+                    <select id="karat">
+                        <option value="24">24k</option>
+                        <option value="22">22k</option>
+                        <option value="21">21k</option>
+                        <option value="18">18k</option>
+                        <option value="14">14k</option>
+                    </select>
+                </div>
+
+                <button id="calculate">Berechne</button>
+                <div id="result"></div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+
+    function parsePrice(priceStr: string) {
+        try {
+            // Allow both . and , as decimal separators
+            priceStr = priceStr.replace(',', '.');
+            return parseFloat(priceStr);
+        } catch (error) {
+            console.error(`Failed to parse price: ${priceStr}, error:`, error);
+            return 0.0;
+        }
+    }
+
+    function formatEuro(amount: number): string {
+        return amount.toFixed(2).replace('.', ',');
+    }
+
+    const calculateBtn = document.getElementById('calculate');
+    const resultDiv = document.getElementById('result');
+    const gram_index = 0
+
+    calculateBtn?.addEventListener('click', async () => {
+        const URL = "https://www.gold.de/kurse/goldpreis/";
+
+        const response = await fetch(URL);
+        if (!response.ok) {
+            console.error(`HTTP error! status: ${response.status}`);
+            resultDiv!.textContent = 'Fehler beim Abrufen der Preisdaten';
+            return;
+        }
+
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        const priceTable = doc.querySelector('section.preistable tbody');
+        if (!priceTable) {
+            console.error('Price table not found');
+            resultDiv!.textContent = 'Fehler beim Abrufen der Preisdaten';
+            return;
+        }
+
+        const rows = priceTable.querySelectorAll('tr');
+        if (!rows || rows.length <= gram_index) {
+            console.error('Price row not found');
+            resultDiv!.textContent = 'Fehler beim Abrufen der Preisdaten';
+            return;
+        }
+
+        const gramPriceSpan = rows[gram_index].querySelector('td.cbraun span');
+        if (!gramPriceSpan) {
+            console.error('Price span not found');
+            resultDiv!.textContent = 'Fehler beim Abrufen der Preisdaten';
+            return;
+        }
+
+        const gramPriceStr = gramPriceSpan.textContent;
+        if (!gramPriceStr) {
+            console.error('Price text not found');
+            resultDiv!.textContent = 'Fehler beim Abrufen der Preisdaten';
+            return;
+        }
+
+        const vendorPriceInput = (document.getElementById('vendor-price') as HTMLInputElement).value.replace(',', '.');
+        const weightInput = (document.getElementById('weight') as HTMLInputElement).value.replace(',', '.');
+
+        const vendorPrice = parseFloat(vendorPriceInput);
+        const weight = parseFloat(weightInput);
+        const karat = parseFloat((document.getElementById('karat') as HTMLSelectElement).value);
+        const currentGramPrice = parsePrice(gramPriceStr); // in 24k
+
+
+        if (isNaN(vendorPrice) || isNaN(weight) || isNaN(karat)) {
+            resultDiv!.textContent = 'Bitte füllen Sie alle Felder aus';
+            return;
+        }
+
+        if (vendorPrice <= 0) {
+            resultDiv!.textContent = 'Verkaufspreis muss positiv sein';
+            return;
+        }
+
+        if (weight <= 0) {
+            resultDiv!.textContent = 'Gewicht muss positiv sein';
+            return;
+        }
+
+
+        const spotprice = weight * currentGramPrice * (karat / 24);
+        const difference = vendorPrice - spotprice;
+        const differencePercentage = (difference / spotprice) * 100;
+
+        resultDiv!.innerHTML = `
+        <div><strong>Spot Preis:</strong> €${formatEuro(spotprice)}</div>
+        <div><strong>Differenz:</strong> €${formatEuro(difference)} (${formatEuro(differencePercentage)}% Aufpreis)</div>
+        `;
+
+        // TODO: Hinweis falls differenz < 0 man im plus ist. Differenz und % farblich markieren
+        // TODO: Maybe also change the scraping source
+        // TODO: Add pretty font on this page
+        // TODO: Add option to calculate spotpreis without giving vendor price
+        // TODO: Add table of current gold prices per gram
+    });
+</script>
+
+<style>
+    #background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        filter: blur(100px);
+    }
+
+    #container {
+        font-family: Inter, Roboto, "Helvetica Neue", "Arial Nova", "Nimbus Sans", Arial, sans-serif;
+        height: 100%;
+    }
+
+    main {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    #hero {
+        display: flex;
+        align-items: start;
+        flex-direction: column;
+        justify-content: center;
+        padding: 16px;
+    }
+
+    h1 {
+        font-size: 22px;
+        margin-top: 0.25em;
+        margin-bottom: 1.5rem;
+    }
+
+    .calculator {
+        max-width: 400px;
+    }
+
+    .input-group {
+        margin-bottom: 1rem;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #111827;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+        box-sizing: border-box;
+        background: white;
+    }
+
+    button {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        margin-top: 0.5rem;
+    }
+
+    button:hover {
+        background-color: #1d4ed8;
+    }
+
+    #result {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 4px;
+        font-size: 1.1rem;
+        font-weight: 500;
+        text-align: center;
+        min-height: 1.5rem;
+        color: #111827;
+    }
+
+    #links {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    #links a {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        color: #111827;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    #links a:hover {
+        color: rgb(78, 80, 86);
+    }
+
+    #links a svg {
+        height: 1em;
+        margin-left: 8px;
+    }
+
+    #links a.button {
+        color: white;
+        background: linear-gradient(83.21deg, #3245ff 0%, #bc52ee 100%);
+        box-shadow:
+                inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.24);
+        border-radius: 10px;
+    }
+
+    #links a.button:hover {
+        color: rgb(230, 230, 230);
+        box-shadow: none;
+    }
+
+    pre {
+        font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas,
+        "DejaVu Sans Mono", monospace;
+        font-weight: normal;
+        background: linear-gradient(14deg, #d83333 0%, #f041ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+    }
+
+    h2 {
+        margin: 0 0 1em;
+        font-weight: normal;
+        color: #111827;
+        font-size: 20px;
+    }
+
+    p {
+        color: #4b5563;
+        font-size: 16px;
+        line-height: 24px;
+        letter-spacing: -0.006em;
+        margin: 0;
+    }
+
+    code {
+        display: inline-block;
+        background:
+                linear-gradient(66.77deg, #f3cddd 0%, #f5cee7 100%) padding-box,
+                linear-gradient(155deg, #d83333 0%, #f041ff 18%, #f5cee7 45%) border-box;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        padding: 6px 8px;
+    }
+
+    .box {
+        padding: 16px;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 16px;
+        border: 1px solid white;
+    }
+
+    #news {
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        max-width: 300px;
+        text-decoration: none;
+        transition: background 0.2s;
+        backdrop-filter: blur(50px);
+    }
+
+    #news:hover {
+        background: rgba(255, 255, 255, 0.55);
+    }
+
+    @media screen and (max-height: 368px) {
+        #news {
+            display: none;
+        }
+    }
+
+    @media screen and (max-width: 768px) {
+        #container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #hero {
+            display: block;
+            padding-top: 10%;
+        }
+
+        #links {
+            flex-wrap: wrap;
+        }
+
+        #links a.button {
+            padding: 14px 18px;
+        }
+
+        #news {
+            right: 16px;
+            left: 16px;
+            bottom: 2.5rem;
+            max-width: 100%;
+        }
+
+        h1 {
+            line-height: 1.5;
+        }
+    }
+</style>
