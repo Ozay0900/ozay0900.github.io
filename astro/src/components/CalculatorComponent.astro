@@ -1,5 +1,21 @@
 ---
 import background from "../assets/background.svg";
+
+const API_URL = "https://api.edelmetalle.de/public.json";
+let goldPricePerGram = 0;
+
+try {
+    const response = await fetch(API_URL);
+    const data = await response.json();
+
+    // gold_eur is price per troy ounce, convert to gram
+    // 1 troy ounce = 31.1035 grams
+    goldPricePerGram = data.gold_eur / 31.1035;
+
+    console.log(`Gold price: €${goldPricePerGram.toFixed(2)}/gram`);
+} catch (error) {
+    console.error('Failed to fetch gold price:', error);
+}
 ---
 
 <div id="container">
@@ -37,108 +53,45 @@ import background from "../assets/background.svg";
     </main>
 </div>
 
-<script>
-
-    function parsePrice(priceStr: string) {
-        try {
-            // Allow both . and , as decimal separators
-            priceStr = priceStr.replace(',', '.');
-            return parseFloat(priceStr);
-        } catch (error) {
-            console.error(`Failed to parse price: ${priceStr}, error:`, error);
-            return 0.0;
-        }
-    }
-
-    function formatEuro(amount: number): string {
+<script define:vars={{ goldPricePerGram }}>
+    function formatEuro(amount) {
         return amount.toFixed(2).replace('.', ',');
     }
 
     const calculateBtn = document.getElementById('calculate');
     const resultDiv = document.getElementById('result');
-    const gram_index = 0
 
-    calculateBtn?.addEventListener('click', async () => {
-        const URL = "https://www.gold.de/kurse/goldpreis/";
-
-        const response = await fetch(URL);
-        if (!response.ok) {
-            console.error(`HTTP error! status: ${response.status}`);
-            resultDiv!.textContent = 'Fehler beim Abrufen der Preisdaten';
-            return;
-        }
-
-        const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-
-        const priceTable = doc.querySelector('section.preistable tbody');
-        if (!priceTable) {
-            console.error('Price table not found');
-            resultDiv!.textContent = 'Fehler beim Abrufen der Preisdaten';
-            return;
-        }
-
-        const rows = priceTable.querySelectorAll('tr');
-        if (!rows || rows.length <= gram_index) {
-            console.error('Price row not found');
-            resultDiv!.textContent = 'Fehler beim Abrufen der Preisdaten';
-            return;
-        }
-
-        const gramPriceSpan = rows[gram_index].querySelector('td.cbraun span');
-        if (!gramPriceSpan) {
-            console.error('Price span not found');
-            resultDiv!.textContent = 'Fehler beim Abrufen der Preisdaten';
-            return;
-        }
-
-        const gramPriceStr = gramPriceSpan.textContent;
-        if (!gramPriceStr) {
-            console.error('Price text not found');
-            resultDiv!.textContent = 'Fehler beim Abrufen der Preisdaten';
-            return;
-        }
-
-        const vendorPriceInput = (document.getElementById('vendor-price') as HTMLInputElement).value.replace(',', '.');
-        const weightInput = (document.getElementById('weight') as HTMLInputElement).value.replace(',', '.');
+    calculateBtn?.addEventListener('click', () => {
+        const vendorPriceInput = document.getElementById('vendor-price').value.replace(',', '.');
+        const weightInput = document.getElementById('weight').value.replace(',', '.');
 
         const vendorPrice = parseFloat(vendorPriceInput);
         const weight = parseFloat(weightInput);
-        const karat = parseFloat((document.getElementById('karat') as HTMLSelectElement).value);
-        const currentGramPrice = parsePrice(gramPriceStr); // in 24k
-
+        const karat = parseFloat(document.getElementById('karat').value);
 
         if (isNaN(vendorPrice) || isNaN(weight) || isNaN(karat)) {
-            resultDiv!.textContent = 'Bitte füllen Sie alle Felder aus';
+            resultDiv.textContent = 'Bitte füllen Sie alle Felder aus';
             return;
         }
 
         if (vendorPrice <= 0) {
-            resultDiv!.textContent = 'Verkaufspreis muss positiv sein';
+            resultDiv.textContent = 'Verkaufspreis muss positiv sein';
             return;
         }
 
         if (weight <= 0) {
-            resultDiv!.textContent = 'Gewicht muss positiv sein';
+            resultDiv.textContent = 'Gewicht muss positiv sein';
             return;
         }
 
-
-        const spotprice = weight * currentGramPrice * (karat / 24);
+        const spotprice = weight * goldPricePerGram * (karat / 24);
         const difference = vendorPrice - spotprice;
         const differencePercentage = (difference / spotprice) * 100;
 
-        resultDiv!.innerHTML = `
+        resultDiv.innerHTML = `
         <div><strong>Spot Preis:</strong> €${formatEuro(spotprice)}</div>
         <div><strong>Differenz:</strong> €${formatEuro(difference)} (${formatEuro(differencePercentage)}% Aufpreis)</div>
         `;
-
-        // TODO: Hinweis falls differenz < 0 man im plus ist. Differenz und % farblich markieren
-        // TODO: Maybe also change the scraping source
-        // TODO: Add pretty font on this page
-        // TODO: Add option to calculate spotpreis without giving vendor price
-        // TODO: Add table of current gold prices per gram
     });
 </script>
 
