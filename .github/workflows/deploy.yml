@@ -5,6 +5,9 @@ on:
   # Using a different branch name? Replace `main` with your branch’s name
   push:
     branches: [ main ]
+  # Schedule: 9 times per hour
+  schedule:
+    - cron: '0,7,14,21,28,35,42,49,56 * * * *'
   # Allows you to run this workflow manually from the Actions tab on GitHub.
   workflow_dispatch:
 
