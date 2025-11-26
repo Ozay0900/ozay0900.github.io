@@ -65,15 +65,21 @@ import background from "../assets/background.svg";
 </div>
 
 <script>
+
+    interface FinenessDetails {
+        label: string;
+        fineness: number;
+    }
+
     let goldPricePerGram = 0;
     const API_URL = "https://gold-price-proxy.falling-grass-da27.workers.dev/";
 
-    const finenessMap = {
-        24: { label: '24k (999)', fineness: 1 },
-        22: { label: '22k (916)', fineness: 0.916 },
-        21: { label: '21k (900)', fineness: 0.900 },
-        18: { label: '18k (750)', fineness: 0.750 },
-        14: { label: '14k (585)', fineness: 0.585 }
+    const finenessMap: Record<number, FinenessDetails> = {
+        24: {label: '24k (999)', fineness: 1},
+        22: {label: '22k (916)', fineness: 0.916},
+        21: {label: '21k (900)', fineness: 0.900},
+        18: {label: '18k (750)', fineness: 0.750},
+        14: {label: '14k (585)', fineness: 0.585}
     };
 
     async function fetchGoldPrice() {
@@ -83,20 +89,22 @@ import background from "../assets/background.svg";
 
             // gold_eur is price per troy ounce, convert to gram
             // 1 troy ounce = 31.1035 grams
-            goldPricePerGram = data.gold_eur / 31.1035;
+            const goldPricePerGram = data.gold_eur / 31.1035;
 
             console.log(`Gold price: €${goldPricePerGram.toFixed(2)}/gram`);
 
             // Update price table
-            updatePriceTable();
+            updatePriceTable(goldPricePerGram);
         } catch (error) {
             console.error('Failed to fetch gold price:', error);
-            updatePriceTable(true);
+            updatePriceTable(0, true);
         }
     }
 
-    function updatePriceTable(error = false) {
+
+    function updatePriceTable(goldPricePerGram: number, error = false) {
         const priceTableBody = document.getElementById('price-table-body');
+        if (!priceTableBody) return;
 
         if (error) {
             priceTableBody.innerHTML = `
@@ -108,7 +116,7 @@ import background from "../assets/background.svg";
         }
 
         priceTableBody.innerHTML = Object.entries(finenessMap)
-            .sort(([a], [b]) => b - a)
+            .sort(([a,], [b,]) => parseInt(b) - parseInt(a))
             .map(([karat, details]) => `
             <tr>
                 <td>${details.label}</td>
@@ -122,56 +130,59 @@ import background from "../assets/background.svg";
     // Periodically refetch (e.g., every 5 minutes)
     setInterval(fetchGoldPrice, 5 * 60 * 1000);
 
-    function formatEuro(amount) {
+    function formatEuro(amount: number): string {
         return amount.toFixed(2).replace('.', ',');
     }
 
     const calculateBtn = document.getElementById('calculate');
     const resultDiv = document.getElementById('result');
 
-    calculateBtn?.addEventListener('click', () => {
-        const vendorPriceInput = document.getElementById('vendor-price').value.replace(',', '.');
-        const weightInput = document.getElementById('weight').value.replace(',', '.');
 
-        const vendorPrice = parseFloat(vendorPriceInput);
-        const weight = parseFloat(weightInput);
-        const karat = parseFloat(document.getElementById('karat').value);
+    if (calculateBtn && resultDiv) {
+        calculateBtn.addEventListener('click', () => {
+            const vendorPriceInput = (document.getElementById('vendor-price') as HTMLInputElement).value.replace(',', '.');
+            const weightInput = (document.getElementById('weight') as HTMLInputElement).value.replace(',', '.');
+            const karatSelect = document.getElementById('karat') as HTMLSelectElement;
 
-        if (isNaN(vendorPrice) || isNaN(weight) || isNaN(karat)) {
-            resultDiv.textContent = 'Bitte füllen Sie alle Felder aus';
-            return;
-        }
+            const vendorPrice = parseFloat(vendorPriceInput);
+            const weight = parseFloat(weightInput);
+            const karat = parseFloat(karatSelect.value);
 
-        if (vendorPrice <= 0) {
-            resultDiv.textContent = 'Verkaufspreis muss positiv sein';
-            return;
-        }
+            if (isNaN(vendorPrice) || isNaN(weight) || isNaN(karat)) {
+                resultDiv.textContent = 'Bitte füllen Sie alle Felder aus';
+                return;
+            }
 
-        if (weight <= 0) {
-            resultDiv.textContent = 'Gewicht muss positiv sein';
-            return;
-        }
+            if (vendorPrice <= 0) {
+                resultDiv.textContent = 'Verkaufspreis muss positiv sein';
+                return;
+            }
 
-        // Use fineness for accurate spot price calculation
-        const fineness = finenessMap[karat].fineness;
-        const spotprice = weight * goldPricePerGram * fineness;
-        const difference = vendorPrice - spotprice;
-        const differencePercentage = (difference / spotprice) * 100;
+            if (weight <= 0) {
+                resultDiv.textContent = 'Gewicht muss positiv sein';
+                return;
+            }
 
-        // Color-code the difference based on its value
-        const differenceColor = difference >= 0 ? 'green' : 'red';
-        const percentageColor = differencePercentage >= 0 ? 'green' : 'red';
+            // Use type assertion to ensure karat is a valid key
+            const fineness = finenessMap[karat as keyof typeof finenessMap].fineness;
+            const spotprice = weight * goldPricePerGram * fineness;
+            const difference = vendorPrice - spotprice;
+            const differencePercentage = (difference / spotprice) * 100;
 
-        resultDiv.innerHTML = `
-        <div><strong>Spot Preis:</strong> €${formatEuro(spotprice)}</div>
-        <div><strong>Differenz:</strong> <span style="color: ${differenceColor}">€${formatEuro(difference)}</span> 
-        (<span style="color: ${percentageColor}">${formatEuro(differencePercentage)}% Aufpreis</span>)</div>
+            // Color-code the difference based on its value
+            const differenceColor = difference >= 0 ? 'green' : 'red';
+            const percentageColor = differencePercentage >= 0 ? 'green' : 'red';
+
+            resultDiv.innerHTML = `
+            <div><strong>Spot Preis:</strong> €${formatEuro(spotprice)}</div>
+            <div><strong>Differenz:</strong> <span style="color: ${differenceColor}">€${formatEuro(difference)}</span> 
+            (<span style="color: ${percentageColor}">${formatEuro(differencePercentage)}% Aufpreis</span>)</div>
         `;
-
-        // Optional TODO improvements:
-        // - Add option to calculate spotpreis without vendor price
-        // - Show how much gram price needs to increase to get invested money back
-    });
+        });
+    }
+    // Optional TODO improvements:
+    // - Add option to calculate spotpreis without vendor price
+    // - Show how much gram price needs to increase to get invested money back
 </script>
 
 <style>
@@ -236,11 +247,21 @@ import background from "../assets/background.svg";
     }
 
     @keyframes jump {
-        0%, 100% { transform: translateY(0); }
-        12.5% { transform: translateY(-10px); }
-        25% { transform: translateY(0); }
-        37.5% { transform: translateY(-10px); }
-        50%, 100% { transform: translateY(0); }
+        0%, 100% {
+            transform: translateY(0);
+        }
+        12.5% {
+            transform: translateY(-10px);
+        }
+        25% {
+            transform: translateY(0);
+        }
+        37.5% {
+            transform: translateY(-10px);
+        }
+        50%, 100% {
+            transform: translateY(0);
+        }
     }
 
     .heart:hover {
@@ -267,6 +288,7 @@ import background from "../assets/background.svg";
         min-width: 250px;
         max-width: 350px;
     }
+
     .price-table h2 {
         font-size: 18px;
         margin-top: 0;
@@ -312,6 +334,7 @@ import background from "../assets/background.svg";
     tbody tr:hover {
         background-color: rgba(37, 99, 235, 0.05);
     }
+
     tbody tr:last-child td {
         border-bottom: none;
     }
