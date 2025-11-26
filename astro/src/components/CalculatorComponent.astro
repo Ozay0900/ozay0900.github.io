@@ -1,50 +1,25 @@
 ---
 import background from "../assets/background.svg";
-
-const API_URL = "https://api.edelmetalle.de/public.json";
-let goldPricePerGram = 0;
-
-try {
-    const response = await fetch(API_URL);
-    const data = await response.json();
-
-    // gold_eur is price per troy ounce, convert to gram
-    // 1 troy ounce = 31.1035 grams
-    goldPricePerGram = data.gold_eur / 31.1035;
-
-    console.log(`Gold price: €${goldPricePerGram.toFixed(2)}/gram`);
-} catch (error) {
-    console.error('Failed to fetch gold price:', error);
-}
-
-// Calculate prices using fineness (industry standard)
-const karatPrices = {
-    '24k (999)': goldPricePerGram,
-    '22k (916)': goldPricePerGram * 0.916,
-    '21k (900)': goldPricePerGram * 0.900,
-    '18k (750)': goldPricePerGram * 0.750,
-    '14k (585)': goldPricePerGram * 0.585,
-};
 ---
 
-<div id="container">
+<div id="container" class="bg-gradient">
     <img id="background" src={background.src} alt="" fetchpriority="high"/>
     <main>
         <section id="hero">
             <h1>
-                <div class="heart">
+                <div class="heart pulse">
                     ♡
                 </div>
-                <div>
+                <div class="title-text">
                     𝑯𝑨𝒀𝑹𝑼𝑵𝑵𝑰𝑺𝑨'𝑺
                 </div>
-                <div>
+                <div class="title-text">
                     𝑮𝑶𝑳𝑫 𝑹𝑬𝑪𝑯𝑵𝑬𝑹
                 </div>
             </h1>
 
             <div class="content-wrapper">
-                <div class="calculator">
+                <div class="calculator glass-card">
                     <div class="input-group">
                         <label for="vendor-price">Händler Verkaufspreis</label>
                         <input type="number" id="vendor-price" placeholder="e.g., 60" step="0.01"/>
@@ -66,11 +41,11 @@ const karatPrices = {
                         </select>
                     </div>
 
-                    <button id="calculate">berechne</button>
-                    <div id="result"></div>
+                    <button id="calculate" class="calculate-btn">berechne</button>
+                    <div id="result" class="result-display"></div>
                 </div>
 
-                <div class="price-table">
+                <div class="price-table glass-card">
                     <h2>Aktueller Goldkurs</h2>
                     <table>
                         <thead>
@@ -79,13 +54,8 @@ const karatPrices = {
                             <th>Preis/Gramm</th>
                         </tr>
                         </thead>
-                        <tbody>
-                        {Object.entries(karatPrices).map(([karat, price]) => (
-                                <tr>
-                                    <td>{karat}</td>
-                                    <td>€{price.toFixed(2).replace('.', ',')}</td>
-                                </tr>
-                        ))}
+                        <tbody id="price-table-body">
+                        <!-- Dynamically populated by JavaScript -->
                         </tbody>
                     </table>
                 </div>
@@ -94,22 +64,70 @@ const karatPrices = {
     </main>
 </div>
 
-<script define:vars={{goldPricePerGram}}>
+<script>
+    let goldPricePerGram = 0;
+    const API_URL = "https://api.edelmetalle.de/public.json";
+
+    const finenessMap = {
+        24: { label: '24k (999)', fineness: 1 },
+        22: { label: '22k (916)', fineness: 0.916 },
+        21: { label: '21k (900)', fineness: 0.900 },
+        18: { label: '18k (750)', fineness: 0.750 },
+        14: { label: '14k (585)', fineness: 0.585 }
+    };
+
+    async function fetchGoldPrice() {
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+
+            // gold_eur is price per troy ounce, convert to gram
+            // 1 troy ounce = 31.1035 grams
+            goldPricePerGram = data.gold_eur / 31.1035;
+
+            console.log(`Gold price: €${goldPricePerGram.toFixed(2)}/gram`);
+
+            // Update price table
+            updatePriceTable();
+        } catch (error) {
+            console.error('Failed to fetch gold price:', error);
+            updatePriceTable(true);
+        }
+    }
+
+    function updatePriceTable(error = false) {
+        const priceTableBody = document.getElementById('price-table-body');
+
+        if (error) {
+            priceTableBody.innerHTML = `
+            <tr>
+                <td colspan="2" style="text-align: center; color: red;">Fehler beim Laden des Goldpreises</td>
+            </tr>
+        `;
+            return;
+        }
+
+        priceTableBody.innerHTML = Object.entries(finenessMap)
+            .sort(([a], [b]) => b - a)
+            .map(([karat, details]) => `
+            <tr>
+                <td>${details.label}</td>
+                <td>€${(goldPricePerGram * details.fineness).toFixed(2).replace('.', ',')}</td>
+            </tr>
+        `).join('');
+    }
+    // Fetch on page load
+    fetchGoldPrice();
+
+    // Periodically refetch (e.g., every 5 minutes)
+    setInterval(fetchGoldPrice, 5 * 60 * 1000);
+
     function formatEuro(amount) {
         return amount.toFixed(2).replace('.', ',');
     }
 
     const calculateBtn = document.getElementById('calculate');
     const resultDiv = document.getElementById('result');
-
-    // Fineness map for accurate calculations
-    const finenessMap = {
-        24: 1,
-        22: 0.916,
-        21: 0.900,
-        18: 0.750,
-        14: 0.585
-    };
 
     calculateBtn?.addEventListener('click', () => {
         const vendorPriceInput = document.getElementById('vendor-price').value.replace(',', '.');
@@ -135,19 +153,24 @@ const karatPrices = {
         }
 
         // Use fineness for accurate spot price calculation
-        const fineness = finenessMap[karat];
+        const fineness = finenessMap[karat].fineness;
         const spotprice = weight * goldPricePerGram * fineness;
         const difference = vendorPrice - spotprice;
         const differencePercentage = (difference / spotprice) * 100;
 
+        // Color-code the difference based on its value
+        const differenceColor = difference >= 0 ? 'green' : 'red';
+        const percentageColor = differencePercentage >= 0 ? 'green' : 'red';
+
         resultDiv.innerHTML = `
         <div><strong>Spot Preis:</strong> €${formatEuro(spotprice)}</div>
-        <div><strong>Differenz:</strong> €${formatEuro(difference)} (${formatEuro(differencePercentage)}% Aufpreis)</div>
+        <div><strong>Differenz:</strong> <span style="color: ${differenceColor}">€${formatEuro(difference)}</span> 
+        (<span style="color: ${percentageColor}">${formatEuro(differencePercentage)}% Aufpreis</span>)</div>
         `;
 
-        // TODO: Hinweis falls differenz < 0 man im plus ist. Differenz und % farblich markieren
-        // TODO: Add option to calculate spotpreis without giving vendor price
-        // TODO: Show how much gram price needs to increase to get the invested money back (after aufschlag)
+        // Optional TODO improvements:
+        // - Add option to calculate spotpreis without vendor price
+        // - Show how much gram price needs to increase to get invested money back
     });
 </script>
 
@@ -183,6 +206,19 @@ const karatPrices = {
         width: 100%;
     }
 
+    .calculator, .price-table {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+    }
+
+    .calculator:hover, .price-table:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        transition: box-shadow 0.3s ease;
+    }
+
     h1 {
         font-size: 35px;
         margin-top: 0;
@@ -191,7 +227,7 @@ const karatPrices = {
         line-height: 1.2;
         letter-spacing: 2px;
         font-weight: 700;
-        color: #111827;  /* Keep original color */
+        color: #111827;
     }
 
     .heart {
@@ -213,23 +249,24 @@ const karatPrices = {
 
     .content-wrapper {
         display: flex;
-        gap: 5rem;
+        gap: 4rem;
         align-items: flex-start;
         width: 100%;
-        max-width: 600px;
+        justify-content: center; /* Changed from flex-start to center */
+        max-width: 700px; /* Add a max-width */
+        margin: 0 auto; /* This centers the entire wrapper */
     }
 
     .calculator {
-        flex: 1;
+        width: 300px;
         min-width: 300px;
     }
 
     .price-table {
-        flex: 0 1 auto;
+        width: 350px;
         min-width: 250px;
         max-width: 350px;
     }
-
     .price-table h2 {
         font-size: 18px;
         margin-top: 0;
@@ -241,40 +278,69 @@ const karatPrices = {
 
     table {
         width: 100%;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 4px;
-        border-collapse: collapse;
+        border-collapse: separate; /* keeps spacing consistent */
+        border-spacing: 0 15px; /* adds vertical spacing between rows */
+        border-radius: 8px;
         overflow: hidden;
+        background: white;
+        text-align: center;
+    }
+
+    thead {
+        background-color: #f3f4f6;
+    }
+
+    th, td {
+        padding: 1rem 1rem; /* more padding vertically */
+        line-height: 1; /* improves readability */
     }
 
     th {
-        padding: 0.75rem;
-        text-align: left;
         font-weight: 600;
-        background: #f3f4f6;
         color: #111827;
-        border-bottom: 1px solid #ddd;
-    }
-
-    th:last-child {
-        text-align: right;
+        border-bottom: 2px solid #e2e8f0;
     }
 
     td {
-        padding: 0.75rem;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    tbody tr {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    tbody tr:hover {
+        background-color: rgba(37, 99, 235, 0.05);
+    }
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    th:first-child {
+        text-align: right;
+    }
+
+    th:last-child {
+        text-align: left;
+    }
+
+    td:first-child {
+        text-align: right;
+        width: 40%;
     }
 
     td:last-child {
-        text-align: right;
+        text-align: left;
+        width: 60%;
     }
 
     tbody tr {
         transition: background-color 0.2s ease;
+        border-bottom: 1px solid #e2e8f0;
     }
 
     tbody tr:hover {
-        background-color: rgba(37, 99, 235, 0.1);
+        background-color: rgba(37, 99, 235, 0.05);
     }
 
     tbody tr:last-child td {
@@ -352,5 +418,6 @@ const karatPrices = {
             text-align: center;
         }
     }
-
 </style>
+
+
