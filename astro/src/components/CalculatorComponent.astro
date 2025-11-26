@@ -89,7 +89,7 @@ import background from "../assets/background.svg";
 
             // gold_eur is price per troy ounce, convert to gram
             // 1 troy ounce = 31.1035 grams
-            const goldPricePerGram = data.gold_eur / 31.1035;
+            goldPricePerGram = data.gold_eur / 31.1035;
 
             console.log(`Gold price: €${goldPricePerGram.toFixed(2)}/gram`);
 
@@ -144,9 +144,12 @@ import background from "../assets/background.svg";
             const weightInput = (document.getElementById('weight') as HTMLInputElement).value.replace(',', '.');
             const karatSelect = document.getElementById('karat') as HTMLSelectElement;
 
+            console.log(`${vendorPriceInput} ${weightInput} ${karatSelect}`);
             const vendorPrice = parseFloat(vendorPriceInput);
             const weight = parseFloat(weightInput);
             const karat = parseFloat(karatSelect.value);
+
+            console.log(`${vendorPrice} ${weight} ${karat}`);
 
             if (isNaN(vendorPrice) || isNaN(weight) || isNaN(karat)) {
                 resultDiv.textContent = 'Bitte füllen Sie alle Felder aus';
@@ -168,6 +171,10 @@ import background from "../assets/background.svg";
             const spotprice = weight * goldPricePerGram * fineness;
             const difference = vendorPrice - spotprice;
             const differencePercentage = (difference / spotprice) * 100;
+
+            console.log("spotprice", spotprice);
+            console.log("difference", difference)
+            console.log("differencePercentage", differencePercentage)
 
             // Color-code the difference based on its value
             const differenceColor = difference >= 0 ? 'green' : 'red';
