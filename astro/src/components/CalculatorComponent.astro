@@ -171,19 +171,32 @@ import background from "../assets/background.svg";
             const spotprice = weight * goldPricePerGram * fineness;
             const difference = vendorPrice - spotprice;
             const differencePercentage = (difference / spotprice) * 100;
+            const requiredSpotPricePerGram = vendorPrice / (weight * fineness);
+            const requiredIncreasePercentage = ((requiredSpotPricePerGram - goldPricePerGram) / goldPricePerGram) * 100;
+
+
 
             console.log("spotprice", spotprice);
             console.log("difference", difference)
             console.log("differencePercentage", differencePercentage)
 
             // Color-code the difference based on its value
-            const differenceColor = difference >= 0 ? 'green' : 'red';
-            const percentageColor = differencePercentage >= 0 ? 'green' : 'red';
+            const differenceColor = difference >= 0 ? 'red' : 'greed';
+            const percentageColor = differencePercentage >= 0 ? 'red' : 'green';
 
             resultDiv.innerHTML = `
             <div><strong>Spot Preis:</strong> €${formatEuro(spotprice)}</div>
             <div><strong>Differenz:</strong> <span style="color: ${differenceColor}">€${formatEuro(difference)}</span> 
             (<span style="color: ${percentageColor}">${formatEuro(differencePercentage)}% Aufpreis</span>)</div>
+            <div style="margin-top: 10px;">
+                <strong>
+                    Der Goldkurs muss auf 
+                    <span style="color: ${percentageColor}">€${formatEuro(requiredSpotPricePerGram)}/g</span> 
+                    bzw. um 
+                    <span style="color: ${percentageColor}">${formatEuro(requiredIncreasePercentage)}%</span>  
+                    steigen um wieder den Aufpreis wieder auszugleichen
+                </strong>
+            </div>
         `;
         });
     }
