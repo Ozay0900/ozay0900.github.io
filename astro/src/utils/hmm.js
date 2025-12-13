@@ -1,22 +1,22 @@
 
-function markov_step(tpm, state) {
+export function markov_step(tpm, state) {
     const p = tpm[state][0]
 
     return Math.random() < tpm[state][0] ? 0 : 1;
 }
 
-function state_dep_process(state, mu, sigma) {
+export function state_dep_process(state, mu, sigma) {
     return boxMullerTransform(mu[state], sigma[state]);
 }
 
 
-function calc_delta(tpm) {
+export function calc_delta(tpm) {
     const delta1 = tpm[1][0] / (tpm[0][1] + tpm[1][0]);
     const delta2 = 1 - delta1;
     return [delta1, delta2];
 }
 
-function hmm(tpm, T, mu, sigma) {
+export function hmm(tpm, T, mu, sigma) {
     const delta = calc_delta(tpm);
     const delta1 = delta[0];
 
@@ -46,21 +46,7 @@ function boxMullerTransform(mu, sigma) {
     return z0 * sigma + mu;
 }
 
-const mu = [10, 2]
-const sigma = [2, 1]
 
-const gamma_12 = 0.1
-const gamma_21 = 0.2
-
-const tpm = [
-    [1-gamma_12, gamma_12],
-    [gamma_21, 1-gamma_21],
-];
-
-const [s_t, x_t] = hmm(tpm, 1000, mu, sigma)
-
-console.log(s_t)
-console.log(x_t)
 
 
 
