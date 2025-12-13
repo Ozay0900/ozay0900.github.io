@@ -3,9 +3,33 @@ import { hmm } from '../utils/hmm.js';
 ---
 
 <div style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: system-ui, -apple-system, sans-serif;">
-    <h2 style="margin-bottom: 20px; color: #333;">Hidden Markov Model Visualization</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #333;">Simple Hidden Markov Model</h2>
+    </div>
+
+    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 50px; margin-top: 50px">
+        cool and stylish visualization of hmms will be here soon
+    </div>
+
+    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px;">
+        <div style="display: flex; gap: 8px; background: #f1f5f9; padding: 4px; border-radius: 8px;">
+            <button id="scatter-no-color" style="padding: 8px 16px; border: none; background: #2563eb; color: white; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s;">
+                Scatter
+            </button>
+            <button id="scatter-color" style="padding: 8px 16px; border: none; background: transparent; color: #64748b; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s;">
+                Scatter (Colored)
+            </button>
+            <button id="line-no-color" style="padding: 8px 16px; border: none; background: transparent; color: #64748b; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s;">
+                Line
+            </button>
+            <button id="line-color" style="padding: 8px 16px; border: none; background: transparent; color: #64748b; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s;">
+                Line (Colored)
+            </button>
+        </div>
+    </div>
 
     <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
             <div>
                 <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
@@ -25,34 +49,34 @@ import { hmm } from '../utils/hmm.js';
 
             <div>
                 <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
-                    Mean μ₁: <span id="mu1-value" style="color: #dc2626; font-weight: 600;">10.0</span>
+                    Mean μ₁: <span id="mu1-value" style="color: #2563eb; font-weight: 600;">10.0</span>
                 </label>
                 <input type="range" id="mu1" min="-10" max="20" step="0.5" value="10"
-                       style="width: 100%; accent-color: #dc2626;">
+                       style="width: 100%; accent-color: #2563eb;">
             </div>
 
             <div>
                 <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
-                    Mean μ₂: <span id="mu2-value" style="color: #2563eb; font-weight: 600;">2.0</span>
+                    Mean μ₂: <span id="mu2-value" style="color: #dc2626; font-weight: 600;">2.0</span>
                 </label>
                 <input type="range" id="mu2" min="-10" max="20" step="0.5" value="2"
-                       style="width: 100%; accent-color: #2563eb;">
-            </div>
-
-            <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
-                    Std Dev σ₁: <span id="sigma1-value" style="color: #dc2626; font-weight: 600;">2.0</span>
-                </label>
-                <input type="range" id="sigma1" min="0.1" max="5" step="0.1" value="2"
                        style="width: 100%; accent-color: #dc2626;">
             </div>
 
             <div>
                 <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
-                    Std Dev σ₂: <span id="sigma2-value" style="color: #2563eb; font-weight: 600;">1.0</span>
+                    Std Dev σ₁: <span id="sigma1-value" style="color: #2563eb; font-weight: 600;">2.0</span>
+                </label>
+                <input type="range" id="sigma1" min="0.1" max="5" step="0.1" value="2"
+                       style="width: 100%; accent-color: #2563eb;">
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
+                    Std Dev σ₂: <span id="sigma2-value" style="color: #dc2626; font-weight: 600;">1.0</span>
                 </label>
                 <input type="range" id="sigma2" min="0.1" max="5" step="0.1" value="1"
-                       style="width: 100%; accent-color: #2563eb;">
+                       style="width: 100%; accent-color: #dc2626;">
             </div>
 
             <div>
@@ -62,6 +86,14 @@ import { hmm } from '../utils/hmm.js';
                 <input type="range" id="t" min="100" max="5000" step="100" value="1000"
                        style="width: 100%; accent-color: #059669;">
             </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
+                    Random Seed: <span id="seed-value" style="color: #7c3aed; font-weight: 600;">42</span>
+                </label>
+                <input type="number" id="seed" min="0" max="99999" value="42"
+                       style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
+            </div>
         </div>
     </div>
 
@@ -69,22 +101,29 @@ import { hmm } from '../utils/hmm.js';
         <canvas id="chart" width="1100" height="500" style="display: block;"></canvas>
     </div>
 
-    <div style="margin-top: 15px; display: flex; gap: 20px; justify-content: center;">
+    <div id="legend" style="margin-top: 15px; display: flex; gap: 20px; justify-content: center;">
         <div style="display: flex; align-items: center; gap: 8px;">
-            <div style="width: 16px; height: 16px; background: #dc2626; border-radius: 50%;"></div>
+            <div style="width: 16px; height: 16px; background: #2563eb; border-radius: 50%;"></div>
             <span style="color: #555;">State 1</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
-            <div style="width: 16px; height: 16px; background: #2563eb; border-radius: 50%;"></div>
+            <div style="width: 16px; height: 16px; background: #dc2626; border-radius: 50%;"></div>
             <span style="color: #555;">State 2</span>
         </div>
     </div>
 </div>
 
 <script>
+    // TODO: Add cool interactive plots for the extensions (covariates, numerical optimization,
     import { hmm } from '../utils/hmm.js';
 
-    function plotHMM() {
+    let plotMode: 'scatter-no-color' | 'scatter-color' | 'line-no-color' | 'line-color' = 'scatter-no-color';
+
+
+    let cachedData: { s_t: number[], x_t: number[] } | null = null;
+    let lastParams: string = '';
+
+    function getParamsKey() {
         const gamma12El = document.getElementById('gamma12') as HTMLInputElement;
         const gamma21El = document.getElementById('gamma21') as HTMLInputElement;
         const mu1El = document.getElementById('mu1') as HTMLInputElement;
@@ -92,9 +131,26 @@ import { hmm } from '../utils/hmm.js';
         const sigma1El = document.getElementById('sigma1') as HTMLInputElement;
         const sigma2El = document.getElementById('sigma2') as HTMLInputElement;
         const tEl = document.getElementById('t') as HTMLInputElement;
-        const canvas = document.getElementById("chart") as HTMLCanvasElement;
+        const seedEl = document.getElementById('seed') as HTMLInputElement;
 
-        if (!gamma12El || !gamma21El || !mu1El || !mu2El || !sigma1El || !sigma2El || !tEl || !canvas) return;
+        if (!gamma12El || !gamma21El || !mu1El || !mu2El || !sigma1El || !sigma2El || !tEl || !seedEl) return '';
+
+        return `${gamma12El.value}-${gamma21El.value}-${mu1El.value}-${mu2El.value}-${sigma1El.value}-${sigma2El.value}-${tEl.value}-${seedEl.value}`;
+    }
+
+    function plotHMM(regenerate: boolean = false) {
+        const gamma12El = document.getElementById('gamma12') as HTMLInputElement;
+        const gamma21El = document.getElementById('gamma21') as HTMLInputElement;
+        const mu1El = document.getElementById('mu1') as HTMLInputElement;
+        const mu2El = document.getElementById('mu2') as HTMLInputElement;
+        const sigma1El = document.getElementById('sigma1') as HTMLInputElement;
+        const sigma2El = document.getElementById('sigma2') as HTMLInputElement;
+        const tEl = document.getElementById('t') as HTMLInputElement;
+        const seedEl = document.getElementById('seed') as HTMLInputElement;
+        const canvas = document.getElementById("chart") as HTMLCanvasElement;
+        const legend = document.getElementById("legend");
+
+        if (!gamma12El || !gamma21El || !mu1El || !mu2El || !sigma1El || !sigma2El || !tEl || !seedEl || !canvas) return;
 
         const gamma_12 = parseFloat(gamma12El.value);
         const gamma_21 = parseFloat(gamma21El.value);
@@ -103,15 +159,25 @@ import { hmm } from '../utils/hmm.js';
         const sigma1 = parseFloat(sigma1El.value);
         const sigma2 = parseFloat(sigma2El.value);
         const T = parseInt(tEl.value);
+        const seed = parseInt(seedEl.value);
 
-        const mu = [mu1, mu2];
-        const sigma = [sigma1, sigma2];
-        const tpm = [
-            [1 - gamma_12, gamma_12],
-            [gamma_21, 1 - gamma_21],
-        ];
+        const currentParams = getParamsKey();
 
-        const [s_t, x_t] = hmm(tpm, T, mu, sigma);
+
+        if (regenerate || currentParams !== lastParams || !cachedData) {
+            const mu = [mu1, mu2];
+            const sigma = [sigma1, sigma2];
+            const tpm = [
+                [1 - gamma_12, gamma_12],
+                [gamma_21, 1 - gamma_21],
+            ];
+
+            const [s_t, x_t] = hmm(tpm, T, mu, sigma);
+            cachedData = { s_t, x_t };
+            lastParams = currentParams;
+        }
+
+        const { s_t, x_t } = cachedData;
 
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
@@ -127,13 +193,17 @@ import { hmm } from '../utils/hmm.js';
         const range = max - min;
 
 
+        if (legend) {
+            legend.style.display = (plotMode === 'scatter-color' || plotMode === 'line-color') ? 'flex' : 'none';
+        }
+
+
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, width, height);
 
 
         ctx.strokeStyle = "#e5e7eb";
         ctx.lineWidth = 1;
-
 
         for (let i = 0; i <= 10; i++) {
             const y = padding + (i / 10) * plotHeight;
@@ -142,7 +212,6 @@ import { hmm } from '../utils/hmm.js';
             ctx.lineTo(width - padding, y);
             ctx.stroke();
         }
-
 
         for (let i = 0; i <= 10; i++) {
             const x = padding + (i / 10) * plotWidth;
@@ -183,11 +252,8 @@ import { hmm } from '../utils/hmm.js';
 
         ctx.fillStyle = "#1f2937";
         ctx.font = "bold 14px system-ui, sans-serif";
-
-
         ctx.textAlign = "center";
         ctx.fillText("Time Step (t)", width / 2, height - 10);
-
 
         ctx.save();
         ctx.translate(15, height / 2);
@@ -196,16 +262,90 @@ import { hmm } from '../utils/hmm.js';
         ctx.restore();
 
 
-        for (let t = 0; t < T; t++) {
-            const x = padding + (t / (T - 1)) * plotWidth;
-            const y = height - padding - ((x_t[t] - min) / range) * plotHeight;
+        if (plotMode === 'line-no-color') {
 
-            ctx.fillStyle = s_t[t] === 1 ? "#dc2626" : "#2563eb";
-
+            ctx.strokeStyle = "#64748b";
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(x, y, 2.5, 0, 2 * Math.PI);
-            ctx.fill();
+
+            for (let t = 0; t < T; t++) {
+                const x = padding + (t / (T - 1)) * plotWidth;
+                const y = height - padding - ((x_t[t] - min) / range) * plotHeight;
+
+                if (t === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+
+        } else if (plotMode === 'line-color') {
+            ctx.lineWidth = 2;
+
+            for (let t = 0; t < T - 1; t++) {
+                const x1 = padding + (t / (T - 1)) * plotWidth;
+                const y1 = height - padding - ((x_t[t] - min) / range) * plotHeight;
+                const x2 = padding + ((t + 1) / (T - 1)) * plotWidth;
+                const y2 = height - padding - ((x_t[t + 1] - min) / range) * plotHeight;
+
+                ctx.strokeStyle = s_t[t] === 1 ? "#dc2626" : "#2563eb";
+
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+
+        } else if (plotMode === 'scatter-no-color') {
+            ctx.fillStyle = "#64748b";
+
+            for (let t = 0; t < T; t++) {
+                const x = padding + (t / (T - 1)) * plotWidth;
+                const y = height - padding - ((x_t[t] - min) / range) * plotHeight;
+
+                ctx.beginPath();
+                ctx.arc(x, y, 2.5, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+
+        } else if (plotMode === 'scatter-color') {
+            for (let t = 0; t < T; t++) {
+                const x = padding + (t / (T - 1)) * plotWidth;
+                const y = height - padding - ((x_t[t] - min) / range) * plotHeight;
+
+                ctx.fillStyle = s_t[t] === 1 ? "#dc2626" : "#2563eb";
+
+                ctx.beginPath();
+                ctx.arc(x, y, 2.5, 0, 2 * Math.PI);
+                ctx.fill();
+            }
         }
+    }
+
+    function setPlotMode(mode: 'scatter-no-color' | 'scatter-color' | 'line-no-color' | 'line-color') {
+        plotMode = mode;
+
+        const buttons = {
+            'scatter-no-color': document.getElementById('scatter-no-color'),
+            'scatter-color': document.getElementById('scatter-color'),
+            'line-no-color': document.getElementById('line-no-color'),
+            'line-color': document.getElementById('line-color')
+        };
+
+        Object.entries(buttons).forEach(([key, btn]) => {
+            if (btn) {
+                if (key === mode) {
+                    btn.style.background = '#2563eb';
+                    btn.style.color = 'white';
+                } else {
+                    btn.style.background = 'transparent';
+                    btn.style.color = '#64748b';
+                }
+            }
+        });
+
+        plotHMM(false);
     }
 
     function setupSlider(id: string, valueId: string, decimals: number = 2) {
@@ -217,7 +357,24 @@ import { hmm } from '../utils/hmm.js';
         slider.addEventListener('input', (e) => {
             const value = parseFloat((e.target as HTMLInputElement).value);
             display.textContent = value.toFixed(decimals);
-            plotHMM();
+            plotHMM(true);
+        });
+    }
+
+
+    document.getElementById('scatter-no-color')?.addEventListener('click', () => setPlotMode('scatter-no-color'));
+    document.getElementById('scatter-color')?.addEventListener('click', () => setPlotMode('scatter-color'));
+    document.getElementById('line-no-color')?.addEventListener('click', () => setPlotMode('line-no-color'));
+    document.getElementById('line-color')?.addEventListener('click', () => setPlotMode('line-color'));
+
+
+    const seedEl = document.getElementById('seed') as HTMLInputElement;
+    const seedDisplay = document.getElementById('seed-value');
+    if (seedEl && seedDisplay) {
+        seedEl.addEventListener('input', (e) => {
+            const value = parseInt((e.target as HTMLInputElement).value);
+            seedDisplay.textContent = value.toString();
+            plotHMM(true);
         });
     }
 
@@ -229,5 +386,5 @@ import { hmm } from '../utils/hmm.js';
     setupSlider('sigma2', 'sigma2-value', 1);
     setupSlider('t', 't-value', 0);
 
-    plotHMM();
+    plotHMM(true);
 </script>
