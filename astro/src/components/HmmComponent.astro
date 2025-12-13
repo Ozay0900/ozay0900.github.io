@@ -1,0 +1,122 @@
+---
+import { hmm } from '../utils/hmm.js';
+---
+
+<div style="margin: 20px;">
+    <div style="margin-bottom: 10px;">
+        <label>γ₁₂: <span id="gamma12-value">0.1</span></label>
+        <input type="range" id="gamma12" min="0" max="1" step="0.01" value="0.1" style="width: 300px;">
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label>γ₂₁: <span id="gamma21-value">0.2</span></label>
+        <input type="range" id="gamma21" min="0" max="1" step="0.01" value="0.2" style="width: 300px;">
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label>μ₁: <span id="mu1-value">10</span></label>
+        <input type="range" id="mu1" min="-10" max="20" step="0.5" value="10" style="width: 300px;">
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label>μ₂: <span id="mu2-value">2</span></label>
+        <input type="range" id="mu2" min="-10" max="20" step="0.5" value="2" style="width: 300px;">
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label>σ₁: <span id="sigma1-value">2</span></label>
+        <input type="range" id="sigma1" min="0.1" max="5" step="0.1" value="2" style="width: 300px;">
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label>σ₂: <span id="sigma2-value">1</span></label>
+        <input type="range" id="sigma2" min="0.1" max="5" step="0.1" value="1" style="width: 300px;">
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label>T: <span id="t-value">1000</span></label>
+        <input type="range" id="t" min="100" max="5000" step="100" value="1000" style="width: 300px;">
+    </div>
+</div>
+
+<canvas id="chart" width="800" height="400"></canvas>
+
+<script>
+    import { hmm } from '../utils/hmm.js';
+
+    function plotHMM() {
+        const gamma12El = document.getElementById('gamma12') as HTMLInputElement;
+        const gamma21El = document.getElementById('gamma21') as HTMLInputElement;
+        const mu1El = document.getElementById('mu1') as HTMLInputElement;
+        const mu2El = document.getElementById('mu2') as HTMLInputElement;
+        const sigma1El = document.getElementById('sigma1') as HTMLInputElement;
+        const sigma2El = document.getElementById('sigma2') as HTMLInputElement;
+        const tEl = document.getElementById('t') as HTMLInputElement;
+        const canvas = document.getElementById("chart") as HTMLCanvasElement;
+
+        if (!gamma12El || !gamma21El || !mu1El || !mu2El || !sigma1El || !sigma2El || !tEl || !canvas) return;
+
+        const gamma_12 = parseFloat(gamma12El.value);
+        const gamma_21 = parseFloat(gamma21El.value);
+        const mu1 = parseFloat(mu1El.value);
+        const mu2 = parseFloat(mu2El.value);
+        const sigma1 = parseFloat(sigma1El.value);
+        const sigma2 = parseFloat(sigma2El.value);
+        const T = parseInt(tEl.value);
+
+        const mu = [mu1, mu2];
+        const sigma = [sigma1, sigma2];
+        const tpm = [
+            [1 - gamma_12, gamma_12],
+            [gamma_21, 1 - gamma_21],
+        ];
+
+        const [s_t, x_t] = hmm(tpm, T, mu, sigma);
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        const width = canvas.width;
+        const height = canvas.height;
+        const padding = 40;
+
+        const min = Math.min(...x_t);
+        const max = Math.max(...x_t);
+
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, width, height);
+
+        for (let t = 0; t < T; t++) {
+            const x = padding + (t / (T - 1)) * (width - 2 * padding);
+            const y = height - padding - ((x_t[t] - min) / (max - min)) * (height - 2 * padding);
+
+            ctx.fillStyle = s_t[t] === 1 ? "red" : "steelblue";
+
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    }
+
+    function setupSlider(id: string, valueId: string) {
+        const slider = document.getElementById(id) as HTMLInputElement;
+        const display = document.getElementById(valueId);
+
+        if (!slider || !display) return;
+
+        slider.addEventListener('input', (e) => {
+            display.textContent = (e.target as HTMLInputElement).value;
+            plotHMM();
+        });
+    }
+
+    setupSlider('gamma12', 'gamma12-value');
+    setupSlider('gamma21', 'gamma21-value');
+    setupSlider('mu1', 'mu1-value');
+    setupSlider('mu2', 'mu2-value');
+    setupSlider('sigma1', 'sigma1-value');
+    setupSlider('sigma2', 'sigma2-value');
+    setupSlider('t', 't-value');
+
+    plotHMM();
+</script>
