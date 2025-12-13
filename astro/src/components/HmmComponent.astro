@@ -2,44 +2,84 @@
 import { hmm } from '../utils/hmm.js';
 ---
 
-<div style="margin: 20px;">
-    <div style="margin-bottom: 10px;">
-        <label>γ₁₂: <span id="gamma12-value">0.1</span></label>
-        <input type="range" id="gamma12" min="0" max="1" step="0.01" value="0.1" style="width: 300px;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: system-ui, -apple-system, sans-serif;">
+    <h2 style="margin-bottom: 20px; color: #333;">Hidden Markov Model Visualization</h2>
+
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
+                    Transition γ₁₂: <span id="gamma12-value" style="color: #2563eb; font-weight: 600;">0.10</span>
+                </label>
+                <input type="range" id="gamma12" min="0" max="1" step="0.01" value="0.1"
+                       style="width: 100%; accent-color: #2563eb;">
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
+                    Transition γ₂₁: <span id="gamma21-value" style="color: #2563eb; font-weight: 600;">0.20</span>
+                </label>
+                <input type="range" id="gamma21" min="0" max="1" step="0.01" value="0.2"
+                       style="width: 100%; accent-color: #2563eb;">
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
+                    Mean μ₁: <span id="mu1-value" style="color: #dc2626; font-weight: 600;">10.0</span>
+                </label>
+                <input type="range" id="mu1" min="-10" max="20" step="0.5" value="10"
+                       style="width: 100%; accent-color: #dc2626;">
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
+                    Mean μ₂: <span id="mu2-value" style="color: #2563eb; font-weight: 600;">2.0</span>
+                </label>
+                <input type="range" id="mu2" min="-10" max="20" step="0.5" value="2"
+                       style="width: 100%; accent-color: #2563eb;">
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
+                    Std Dev σ₁: <span id="sigma1-value" style="color: #dc2626; font-weight: 600;">2.0</span>
+                </label>
+                <input type="range" id="sigma1" min="0.1" max="5" step="0.1" value="2"
+                       style="width: 100%; accent-color: #dc2626;">
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
+                    Std Dev σ₂: <span id="sigma2-value" style="color: #2563eb; font-weight: 600;">1.0</span>
+                </label>
+                <input type="range" id="sigma2" min="0.1" max="5" step="0.1" value="1"
+                       style="width: 100%; accent-color: #2563eb;">
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">
+                    Time Steps T: <span id="t-value" style="color: #059669; font-weight: 600;">1000</span>
+                </label>
+                <input type="range" id="t" min="100" max="5000" step="100" value="1000"
+                       style="width: 100%; accent-color: #059669;">
+            </div>
+        </div>
     </div>
 
-    <div style="margin-bottom: 10px;">
-        <label>γ₂₁: <span id="gamma21-value">0.2</span></label>
-        <input type="range" id="gamma21" min="0" max="1" step="0.01" value="0.2" style="width: 300px;">
+    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <canvas id="chart" width="1100" height="500" style="display: block;"></canvas>
     </div>
 
-    <div style="margin-bottom: 10px;">
-        <label>μ₁: <span id="mu1-value">10</span></label>
-        <input type="range" id="mu1" min="-10" max="20" step="0.5" value="10" style="width: 300px;">
-    </div>
-
-    <div style="margin-bottom: 10px;">
-        <label>μ₂: <span id="mu2-value">2</span></label>
-        <input type="range" id="mu2" min="-10" max="20" step="0.5" value="2" style="width: 300px;">
-    </div>
-
-    <div style="margin-bottom: 10px;">
-        <label>σ₁: <span id="sigma1-value">2</span></label>
-        <input type="range" id="sigma1" min="0.1" max="5" step="0.1" value="2" style="width: 300px;">
-    </div>
-
-    <div style="margin-bottom: 10px;">
-        <label>σ₂: <span id="sigma2-value">1</span></label>
-        <input type="range" id="sigma2" min="0.1" max="5" step="0.1" value="1" style="width: 300px;">
-    </div>
-
-    <div style="margin-bottom: 10px;">
-        <label>T: <span id="t-value">1000</span></label>
-        <input type="range" id="t" min="100" max="5000" step="100" value="1000" style="width: 300px;">
+    <div style="margin-top: 15px; display: flex; gap: 20px; justify-content: center;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 16px; height: 16px; background: #dc2626; border-radius: 50%;"></div>
+            <span style="color: #555;">State 1</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 16px; height: 16px; background: #2563eb; border-radius: 50%;"></div>
+            <span style="color: #555;">State 2</span>
+        </div>
     </div>
 </div>
-
-<canvas id="chart" width="800" height="400"></canvas>
 
 <script>
     import { hmm } from '../utils/hmm.js';
@@ -78,45 +118,116 @@ import { hmm } from '../utils/hmm.js';
 
         const width = canvas.width;
         const height = canvas.height;
-        const padding = 40;
+        const padding = 60;
+        const plotWidth = width - 2 * padding;
+        const plotHeight = height - 2 * padding;
 
         const min = Math.min(...x_t);
         const max = Math.max(...x_t);
+        const range = max - min;
 
-        ctx.fillStyle = "white";
+
+        ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, width, height);
 
-        for (let t = 0; t < T; t++) {
-            const x = padding + (t / (T - 1)) * (width - 2 * padding);
-            const y = height - padding - ((x_t[t] - min) / (max - min)) * (height - 2 * padding);
 
-            ctx.fillStyle = s_t[t] === 1 ? "red" : "steelblue";
+        ctx.strokeStyle = "#e5e7eb";
+        ctx.lineWidth = 1;
+
+
+        for (let i = 0; i <= 10; i++) {
+            const y = padding + (i / 10) * plotHeight;
+            ctx.beginPath();
+            ctx.moveTo(padding, y);
+            ctx.lineTo(width - padding, y);
+            ctx.stroke();
+        }
+
+
+        for (let i = 0; i <= 10; i++) {
+            const x = padding + (i / 10) * plotWidth;
+            ctx.beginPath();
+            ctx.moveTo(x, padding);
+            ctx.lineTo(x, height - padding);
+            ctx.stroke();
+        }
+
+
+        ctx.strokeStyle = "#374151";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(padding, height - padding);
+        ctx.lineTo(width - padding, height - padding);
+        ctx.moveTo(padding, padding);
+        ctx.lineTo(padding, height - padding);
+        ctx.stroke();
+
+
+        ctx.fillStyle = "#374151";
+        ctx.font = "12px system-ui, sans-serif";
+        ctx.textAlign = "right";
+        for (let i = 0; i <= 5; i++) {
+            const y = padding + (i / 5) * plotHeight;
+            const value = max - (i / 5) * range;
+            ctx.fillText(value.toFixed(1), padding - 10, y + 4);
+        }
+
+
+        ctx.textAlign = "center";
+        for (let i = 0; i <= 5; i++) {
+            const x = padding + (i / 5) * plotWidth;
+            const value = Math.round((i / 5) * T);
+            ctx.fillText(value.toString(), x, height - padding + 20);
+        }
+
+
+        ctx.fillStyle = "#1f2937";
+        ctx.font = "bold 14px system-ui, sans-serif";
+
+
+        ctx.textAlign = "center";
+        ctx.fillText("Time Step (t)", width / 2, height - 10);
+
+
+        ctx.save();
+        ctx.translate(15, height / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText("Observation Value", 0, 0);
+        ctx.restore();
+
+
+        for (let t = 0; t < T; t++) {
+            const x = padding + (t / (T - 1)) * plotWidth;
+            const y = height - padding - ((x_t[t] - min) / range) * plotHeight;
+
+            ctx.fillStyle = s_t[t] === 1 ? "#dc2626" : "#2563eb";
 
             ctx.beginPath();
-            ctx.arc(x, y, 2, 0, 2 * Math.PI);
+            ctx.arc(x, y, 2.5, 0, 2 * Math.PI);
             ctx.fill();
         }
     }
 
-    function setupSlider(id: string, valueId: string) {
+    function setupSlider(id: string, valueId: string, decimals: number = 2) {
         const slider = document.getElementById(id) as HTMLInputElement;
         const display = document.getElementById(valueId);
 
         if (!slider || !display) return;
 
         slider.addEventListener('input', (e) => {
-            display.textContent = (e.target as HTMLInputElement).value;
+            const value = parseFloat((e.target as HTMLInputElement).value);
+            display.textContent = value.toFixed(decimals);
             plotHMM();
         });
     }
 
-    setupSlider('gamma12', 'gamma12-value');
-    setupSlider('gamma21', 'gamma21-value');
-    setupSlider('mu1', 'mu1-value');
-    setupSlider('mu2', 'mu2-value');
-    setupSlider('sigma1', 'sigma1-value');
-    setupSlider('sigma2', 'sigma2-value');
-    setupSlider('t', 't-value');
+    setupSlider('gamma12', 'gamma12-value', 2);
+    setupSlider('gamma21', 'gamma21-value', 2);
+    setupSlider('mu1', 'mu1-value', 1);
+    setupSlider('mu2', 'mu2-value', 1);
+    setupSlider('sigma1', 'sigma1-value', 1);
+    setupSlider('sigma2', 'sigma2-value', 1);
+    setupSlider('t', 't-value', 0);
 
     plotHMM();
 </script>
