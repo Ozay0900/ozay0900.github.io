@@ -1,77 +1,55 @@
 ---
-import Navigation from '../components/Navigation.astro';
+import Layout from './Layout.astro';
 const { frontmatter } = Astro.props;
 ---
 
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>{frontmatter.title}</title>
-</head>
+<Layout title={frontmatter.title}>
+    <main>
+        <a href="/blog">← Back to blog</a>
 
-<body>
-<Navigation />
+        <article>
+            <h1>{frontmatter.title}</h1>
 
-<main>
-    <a href="/blog">← Back to blog</a>
+            <div class="post-meta">
+                <time>{new Date(frontmatter.pubDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                })}</time>
+                {frontmatter.author && <span> • By {frontmatter.author}</span>}
+            </div>
 
-    <article>
-        <h1>{frontmatter.title}</h1>
+            <slot />
+        </article>
+    </main>
 
-        <div class="post-meta">
-            <time>{new Date(frontmatter.pubDate).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            })}</time>
-            {frontmatter.author && <span> • By {frontmatter.author}</span>}
-        </div>
+    <style>
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: system-ui, sans-serif;
+            line-height: 1.6;
+        }
 
-        <slot />
-    </article>
-</main>
+        article {
+            margin-top: 40px;
+        }
 
-<style>
-    body {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-        font-family: system-ui, sans-serif;
-        line-height: 1.6;
-    }
+        h1 {
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
 
-    nav {
-        margin-bottom: 40px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #ddd;
-    }
+        .post-meta {
+            color: #666;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
 
-    nav a {
-        margin-right: 20px;
-        text-decoration: none;
-        color: #333;
-    }
-
-    article {
-        margin-top: 40px;
-    }
-
-    h1 {
-        margin-bottom: 10px;
-        font-size: 2.5rem;
-    }
-
-    .post-meta {
-        color: #666;
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #eee;
-    }
-
-    time {
-        font-size: 0.9rem;
-    }
-</style>
-</body>
-</html>
+        time {
+            font-size: 0.9rem;
+        }
+    </style>
+</Layout>
