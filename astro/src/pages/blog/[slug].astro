@@ -1,0 +1,20 @@
+---
+import { getCollection, render } from 'astro:content';
+import BlogPost from '../../layouts/blogpost.astro';
+
+// This function says: "Create a page for EACH post in the blog collection"
+export async function getStaticPaths() {
+    const posts = await getCollection('blog');
+    return posts.map(post => ({
+        params: { slug: post.slug },  // URL will be /blog/post-1
+        props: { post },
+    }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);  // Convert markdown to HTML
+---
+
+<BlogPost frontmatter={post.data}>
+    <Content />
+</BlogPost>

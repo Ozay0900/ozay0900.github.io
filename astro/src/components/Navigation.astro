@@ -1,0 +1,66 @@
+---
+const currentPath = Astro.url.pathname;
+---
+
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="https://oezay.dev" class="logo">Oezay</a>
+
+        <div class="nav-links">
+            <a href="https://oezay.dev" class={currentPath === '/' ? 'active' : ''}>Home</a>
+            <a href="/blog" class={currentPath.startsWith('/blog') ? 'active' : ''}>Blog</a>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .navbar {
+        padding: 1rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        border-bottom: 1px solid #eee;
+        background-color: white;
+    }
+
+    .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .logo {
+        color: #333;
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    .logo:hover {
+        color: #666;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 30px;
+    }
+
+    .nav-links a {
+        color: #333;
+        text-decoration: none;
+        font-size: 1rem;
+        transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+        color: #666;
+    }
+
+    .nav-links a.active {
+        color: #000;
+        font-weight: bold;
+    }
+</style>

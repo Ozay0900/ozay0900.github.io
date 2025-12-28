@@ -1,0 +1,77 @@
+---
+import Navigation from '../components/Navigation.astro';
+const { frontmatter } = Astro.props;
+---
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{frontmatter.title}</title>
+</head>
+
+<body>
+<Navigation />
+
+<main>
+    <a href="/blog">← Back to blog</a>
+
+    <article>
+        <h1>{frontmatter.title}</h1>
+
+        <div class="post-meta">
+            <time>{new Date(frontmatter.pubDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}</time>
+            {frontmatter.author && <span> • By {frontmatter.author}</span>}
+        </div>
+
+        <slot />
+    </article>
+</main>
+
+<style>
+    body {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: system-ui, sans-serif;
+        line-height: 1.6;
+    }
+
+    nav {
+        margin-bottom: 40px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    nav a {
+        margin-right: 20px;
+        text-decoration: none;
+        color: #333;
+    }
+
+    article {
+        margin-top: 40px;
+    }
+
+    h1 {
+        margin-bottom: 10px;
+        font-size: 2.5rem;
+    }
+
+    .post-meta {
+        color: #666;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    time {
+        font-size: 0.9rem;
+    }
+</style>
+</body>
+</html>

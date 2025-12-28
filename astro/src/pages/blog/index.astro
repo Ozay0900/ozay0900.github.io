@@ -1,0 +1,139 @@
+---
+import { getCollection } from 'astro:content';
+import Navigation from '../../components/Navigation.astro';
+
+const allPosts = await getCollection('blog');
+const sortedPosts = allPosts.sort((a, b) =>
+    b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>My Blog</title>
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: system-ui, sans-serif;
+            line-height: 1.6;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+        }
+
+        .posts-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .post-card {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .post-card:last-child {
+            border-bottom: none;
+        }
+
+        .post-image {
+            flex-shrink: 0;
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .post-content {
+            flex: 1;
+        }
+
+        .post-title {
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+        }
+
+        .post-title a {
+            text-decoration: none;
+            color: #0066cc;
+        }
+
+        .post-title a:hover {
+            text-decoration: underline;
+        }
+
+        .post-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .post-description {
+            color: #555;
+            margin: 10px 0 0 0;
+        }
+
+        .read-more {
+            display: inline-block;
+            margin-top: 10px;
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .read-more:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<Navigation />
+
+<main>
+    <h1>My Blog</h1>
+
+    <ul class="posts-list">
+        {sortedPosts.map((post) => (
+                <li class="post-card">
+                    {post.data.image && (
+                            <img
+                                    src={post.data.image}
+                                    alt={post.data.title}
+                                    class="post-image"
+                            />
+                    )}
+
+                    <div class="post-content">
+                        <h2 class="post-title">
+                            <a href={`/blog/${post.slug}`}>{post.data.title}</a>
+                        </h2>
+
+                        <div class="post-meta">
+                            <time>{new Date(post.data.pubDate).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })}</time>
+                            {post.data.author && <span> • By {post.data.author}</span>}
+                        </div>
+
+                        <p class="post-description">{post.data.description}</p>
+
+                        <a href={`/blog/${post.slug}`} class="read-more">
+                            Read more →
+                        </a>
+                    </div>
+                </li>
+        ))}
+    </ul>
+</main>
+</body>
+</html>
