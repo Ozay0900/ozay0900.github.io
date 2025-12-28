@@ -12,7 +12,7 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);  // Convert markdown to HTML
+const { Content } = await render(post);
 ---
 
 <BlogPost frontmatter={post.data}>
