@@ -17,7 +17,10 @@ import background from "../assets/background.svg";
                     𝑮𝑶𝑳𝑫 𝑹𝑬𝑪𝑯𝑵𝑬𝑹
                 </div>
             </h1>
-
+            <div class="contact-note">
+                Bei wünschen, fragen oder falls etwas nicht funktioniert, schreibt mir eine Mail an<br>
+                <a href="mailto:someone@example.com">calculator@oezay.dev</a>
+            </div>
             <div class="content-wrapper">
                 <div class="calculator glass-card">
                     <div id="calculator-loading" class="loading-container">
@@ -50,7 +53,6 @@ import background from "../assets/background.svg";
                         <div id="result" class="result-display"></div>
                     </div>
                 </div>
-
                 <div class="price-table glass-card">
                     <h2>Aktueller Goldkurs</h2>
                     <div id="table-loading" class="loading-container">
@@ -530,5 +532,10 @@ import background from "../assets/background.svg";
             width: 90%;
             max-width: 350px;
         }
+    }
+
+    .contact-note {
+        margin-bottom: 2rem; /* adds space below the div */
+        line-height: 1.5; /* optional: makes the two lines more readable */
     }
 </style>
